@@ -1,0 +1,52 @@
+name: testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  testes:
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        so: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # Tres caminhos para o mesmo numero: o juiz por subconjunto, a busca com
+      # poda por diagonal e a conta das torres, que nao olha o tabuleiro.
+      - name: testes
+        run: dotnet test testes/Bispos.Testes/Bispos.Testes.csproj -c Release --nologo -v q
+
+      - name: a varredura, e as torres indo alem dela
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- tabela
+
+      - name: a busca contra o produto dos dois tabuleiros de torres
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- torres
+
+      - name: o juiz que enumera todo subconjunto
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- juiz
+
+      - name: os conjuntos maximos contra 2^n
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- maximos
+
+      - name: quantos bispos dominam o tabuleiro
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- dominacao
+
+      - name: cobertura por diagonal contra casa a casa
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- cobertura
+
+      - name: as duas cores, lado a lado
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- cores
+
+      - name: o preco de nao saber podar
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- preco
